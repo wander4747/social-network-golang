@@ -112,3 +112,110 @@ func (repository Publications) All(ID uint64) ([]models.Publication, error) {
 
 	return publications, nil
 }
+
+// Update data publication
+func (repository Publications) Update(publicationID uint64, publication models.Publication) error {
+	statement, erro := repository.db.Prepare("UPDATE publications SET title = ?, content = ? WHERE id = ?")
+
+	if erro != nil {
+		return erro
+	}
+
+	defer statement.Close()
+
+	if _, erro = statement.Exec(publication.Title, publication.Content, publicationID); erro != nil {
+		return erro
+	}
+
+	return nil
+}
+
+// Delete data publication
+func (repository Publications) Delete(publicationID uint64) error {
+	statement, erro := repository.db.Prepare("DELETE FROM publications WHERE id = ?")
+
+	if erro != nil {
+		return erro
+	}
+
+	defer statement.Close()
+
+	if _, erro = statement.Exec(publicationID); erro != nil {
+		return erro
+	}
+
+	return nil
+}
+
+// FindPublicationByUser = Get all publications by user
+func (repository Publications) FindPublicationByUser(userID uint64) ([]models.Publication, error) {
+	lines, erro := repository.db.Query(`
+		SELECT p.*, u.nick FROM publications p
+		INNER  JOIN users u ON u.id = p.author_id
+		WHERE p.author_id = ?
+	`, userID)
+
+	if erro != nil {
+		return nil, erro
+	}
+
+	defer lines.Close()
+
+	var publications []models.Publication
+
+	for lines.Next() {
+		var publication models.Publication
+
+		if erro = lines.Scan(
+			&publication.ID,
+			&publication.Title,
+			&publication.Content,
+			&publication.AuthorID,
+			&publication.Likes,
+			&publication.CreatedAt,
+			&publication.AuthorNick,
+		); erro != nil {
+			return nil, erro
+		}
+
+		publications = append(publications, publication)
+	}
+
+	return publications, nil
+}
+
+// Like = add a like publication
+func (repository Publications) Like(publicationID uint64) error {
+	statement, erro := repository.db.Prepare("UPDATE publications SET likes = likes + 1 WHERE id = ?")
+	if erro != nil {
+		return erro
+	}
+
+	defer statement.Close()
+
+	if _, erro = statement.Exec(publicationID); erro != nil {
+		return erro
+	}
+
+	return nil
+}
+
+// Unlike = add a ulike publication
+func (repository Publications) Unlike(publicationID uint64) error {
+	statement, erro := repository.db.Prepare(`
+		UPDATE publications SET likes = 
+		CASE WHEN likes > 0 THEN likes - 1 
+		ELSE 0 END
+		WHERE id = ?`)
+	if erro != nil {
+		return erro
+	}
+
+	defer statement.Close()
+
+	if _, erro = statement.Exec(publicationID); erro != nil {
+		return erro
+	}
+
+	return nil
+}
