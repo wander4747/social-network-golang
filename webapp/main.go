@@ -15,5 +15,3 @@ func main() {
 	fmt.Println("Run app!")
 	log.Fatal(http.ListenAndServe(":3000", routers))
 }
-
-//ver video 7

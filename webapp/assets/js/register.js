@@ -18,8 +18,9 @@ function createUser(event) {
            password: $('#password').val()
         }
     })
-    /*.done(function() {
-        Swal.fire("Sucesso!", "Usuário cadastrado com sucesso!", "success")
+    .done(function() {
+        alert("Usuário cadastrado com sucesso!")
+        /*Swal.fire("Sucesso!", "Usuário cadastrado com sucesso!", "success")
             .then(function() {
                 $.ajax({
                     url: "/login",
@@ -33,8 +34,10 @@ function createUser(event) {
                 }).fail(function() {
                     Swal.fire("Ops...", "Erro ao autenticar o usuário!", "error");
                 })
-            })
-    }).fail(function() {
-        Swal.fire("Ops...", "Erro ao cadastrar o usuário!", "error");
-    });*/
+            })*/
+    }).fail(function(erro) {
+        console.log(erro)
+        alert("Erro ao cadastrar o usuário!")
+        //Swal.fire("Ops...", "Erro ao cadastrar o usuário!", "error");
+    });
 }

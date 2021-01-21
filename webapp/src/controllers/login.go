@@ -3,18 +3,18 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"webapp/src/response"
 )
 
-// CreateUser = Create new user
-func CreateUser(w http.ResponseWriter, r *http.Request) {
+// DoLogin = uses email and password to access the application
+func DoLogin(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-
+	fmt.Println(r.ParseForm())
 	user, erro := json.Marshal(map[string]string{
-		"name":     r.FormValue("name"),
 		"email":    r.FormValue("email"),
-		"nick":     r.FormValue("nick"),
 		"password": r.FormValue("password"),
 	})
 
@@ -23,7 +23,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, erro := http.Post("http://localhost:5000/users", "application/json", bytes.NewBuffer(user))
+	result, erro := http.Post("http://localhost:5000/login", "application/json", bytes.NewBuffer(user))
 
 	if erro != nil {
 		response.JSON(w, http.StatusInternalServerError, response.ErroAPI{Erro: erro.Error()})
@@ -32,10 +32,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	defer result.Body.Close()
 
-	if result.StatusCode >= 400 {
-		response.ProcessStatusCodeErro(w, result)
-		return
-	}
+	token, _ := ioutil.ReadAll(result.Body)
 
-	response.JSON(w, result.StatusCode, nil)
+	fmt.Println(result.StatusCode, string(token))
 }
